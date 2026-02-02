@@ -9,8 +9,7 @@ import {
     addDays,
     isWeekend,
     differenceInMinutes,
-    max,
-    min
+    max
 } from 'date-fns';
 
 export interface Slot {

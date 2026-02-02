@@ -37,8 +37,8 @@ export async function DELETE(
         deleteCase(id);
         console.log(`Case deleted successfully: ${id}`);
         return NextResponse.json({ success: true, message: "Case and associated events deleted" });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Delete Error:", error);
-        return NextResponse.json({ error: "Failed to delete case", details: error.message }, { status: 500 });
+        return NextResponse.json({ error: "Failed to delete case", details: (error as Error).message }, { status: 500 });
     }
 }

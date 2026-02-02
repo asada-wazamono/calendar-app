@@ -56,7 +56,7 @@ export default function NewCase() {
                 const data = await res.json();
                 router.push(`/cases/${data.id}/candidates?days=${days}`);
             }
-        } catch (error) {
+        } catch (_error) {
             alert('エラーが発生しました');
         } finally {
             setLoading(false);

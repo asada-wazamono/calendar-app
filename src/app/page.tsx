@@ -41,7 +41,7 @@ export default function Home() {
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
         <div>
           <h1>ダッシュボード</h1>
-          <p style={{ color: 'var(--text-muted)' }}>ようこそ、{(session as any)?.user?.name || 'ゲスト'} さん</p>
+          <p style={{ color: 'var(--text-muted)' }}>ようこそ、{session?.user?.name || 'ゲスト'} さん</p>
         </div>
         <button onClick={() => signOut()} style={{ background: 'var(--secondary)', color: 'white' }}>
           ログアウト

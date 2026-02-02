@@ -7,7 +7,7 @@ import { ja } from 'date-fns/locale';
 
 export default function ConfirmPage() {
     const { id } = useParams();
-    const [provisionalEvents, setProvisionalEvents] = useState<any[]>([]);
+    const [provisionalEvents, setProvisionalEvents] = useState<{ start: string; end: string }[]>([]);
     const [manualDate, setManualDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [manualStartTime, setManualStartTime] = useState('10:00');
     const [manualEndTime, setManualEndTime] = useState('11:00');
@@ -19,7 +19,7 @@ export default function ConfirmPage() {
     useEffect(() => {
         fetch(`/api/cases?id=${id}`)
             .then(res => res.json())
-            .then(data => {
+            .then(() => {
                 fetch(`/api/cases/${id}/provisional-times`)
                     .then(res => res.json())
                     .then(times => {
@@ -58,7 +58,7 @@ export default function ConfirmPage() {
             if (res.ok) {
                 router.push('/manage');
             }
-        } catch (e) {
+        } catch (_e) {
             alert('確定に失敗しました');
         } finally {
             setProcessing(false);

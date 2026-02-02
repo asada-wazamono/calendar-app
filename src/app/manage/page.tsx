@@ -26,7 +26,7 @@ export default function Manage() {
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
-                    setCases(data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+                    setCases(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
                 } else {
                     console.error('Failed to fetch cases:', data);
                     setCases([]);

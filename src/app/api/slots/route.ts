@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getCases } from "@/lib/db";
-import { listBusyTimes, listMultiBusyTimes } from "@/lib/google-calendar";
+import { listMultiBusyTimes } from "@/lib/google-calendar";
 import { findFreeSlots } from "@/lib/slot-finder";
 import { addDays, startOfDay } from "date-fns";
 

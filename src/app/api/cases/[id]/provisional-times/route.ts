@@ -20,11 +20,11 @@ export async function GET(
         }));
 
         return NextResponse.json(times);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Provisional Times API Error:", error);
         return NextResponse.json({
             error: "Failed to fetch provisional times",
-            details: error.message || error.toString()
+            details: (error as Error).message || String(error)
         }, { status: 500 });
     }
 }
