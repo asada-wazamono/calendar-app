@@ -59,7 +59,7 @@ export default function Candidates() {
             if (res.ok) {
                 router.push('/manage');
             }
-        } catch (_error) {
+        } catch {
             alert('エラーが発生しました');
         } finally {
             setProcessing(false);

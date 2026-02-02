@@ -54,7 +54,7 @@ export default function Manage() {
                 const data = await res.json();
                 alert(`削除に失敗しました: ${data.error || '不明なエラー'}`);
             }
-        } catch (_e) {
+        } catch {
             alert('削除に失敗しました');
         }
     };
@@ -70,7 +70,7 @@ export default function Manage() {
                 const data = await res.json();
                 alert(`削除に失敗しました: ${data.error || '不明なエラー'}`);
             }
-        } catch (_e) {
+        } catch {
             alert('削除に失敗しました');
         }
     };

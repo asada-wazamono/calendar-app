@@ -58,7 +58,7 @@ export default function ConfirmPage() {
             if (res.ok) {
                 router.push('/manage');
             }
-        } catch (_e) {
+        } catch {
             alert('確定に失敗しました');
         } finally {
             setProcessing(false);
