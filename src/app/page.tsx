@@ -1,66 +1,67 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+export const dynamic = 'force-dynamic';
+
+import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { data: session, status } = useSession();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push('/cases/new');
+    }
+  }, [status, router]);
+
+  if (status === "loading" || status === "authenticated") {
+    return <div className="container">読み込み中...</div>;
+  }
+
+  if (!session) {
+    return (
+      <div className="container" style={{ textAlign: 'center', marginTop: '10vh' }}>
+        <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>G-Cal 仮押さえ君</h1>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
+          Googleカレンダーの空き時間を自動抽出し、候補日程をスマートに管理します。
+        </p>
+        <button className="primary" onClick={() => signIn("google")}>
+          Googleでログインして始める
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="container">
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+        <div>
+          <h1>ダッシュボード</h1>
+          <p style={{ color: 'var(--text-muted)' }}>ようこそ、{(session as any)?.user?.name || 'ゲスト'} さん</p>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <button onClick={() => signOut()} style={{ background: 'var(--secondary)', color: 'white' }}>
+          ログアウト
+        </button>
+      </header>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <Link href="/cases/new" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="card glass animate-fade-in" style={{ height: '100%', cursor: 'pointer' }}>
+            <h2 style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>新しく候補を出す</h2>
+            <p style={{ color: 'var(--text-muted)' }}>カレンダーから空き時間を探し、仮押さえ予定を作成します。</p>
+          </div>
+        </Link>
+        <Link href="/manage" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="card glass animate-fade-in" style={{ height: '100%', cursor: 'pointer', animationDelay: '0.1s' }}>
+            <h2 style={{ color: 'var(--success)', marginBottom: '0.5rem' }}>仮押さえ管理</h2>
+            <p style={{ color: 'var(--text-muted)' }}>作成済みの仮押さえ一覧を確認・削除・確定します。</p>
+          </div>
+        </Link>
+      </div>
     </div>
   );
 }
