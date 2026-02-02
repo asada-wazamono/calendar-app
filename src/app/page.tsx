@@ -18,7 +18,7 @@ export default function Home() {
     }
   }, [status, router]);
 
-  if (status === "loading" || status === "authenticated") {
+  if (status === "loading") {
     return <div className="container">読み込み中...</div>;
   }
 
