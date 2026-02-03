@@ -113,6 +113,9 @@ export default function NewCase() {
                         max="14"
                         required
                     />
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                        ※明日以降の営業日から候補を探します
+                    </p>
                 </div>
 
                 <div>
@@ -153,19 +156,24 @@ export default function NewCase() {
                         onChange={(e) => setMembers(e.target.value)}
                     />
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                        ※自分の予定に加えて、入力した全員の空き時間を考慮します
+                        ※自分は自動で含まれるため、選択不要です。入力した全員の空き時間を合わせて考慮します
                     </p>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <input
-                        type="checkbox"
-                        id="travel"
-                        checked={travelBuffer}
-                        onChange={(e) => setTravelBuffer(e.target.checked)}
-                        style={{ width: 'auto' }}
-                    />
-                    <label htmlFor="travel" style={{ fontWeight: 600 }}>往訪あり (前後60分のバッファを確保)</label>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <input
+                            type="checkbox"
+                            id="travel"
+                            checked={travelBuffer}
+                            onChange={(e) => setTravelBuffer(e.target.checked)}
+                            style={{ width: 'auto' }}
+                        />
+                        <label htmlFor="travel" style={{ fontWeight: 600 }}>往訪あり</label>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem', marginLeft: '1.5rem' }}>
+                        ※予定タイトルに「往訪」が含まれる予定の前後に60分バッファを確保します
+                    </p>
                 </div>
 
                 <button type="submit" className="primary" disabled={loading} style={{ marginTop: '1rem' }}>
