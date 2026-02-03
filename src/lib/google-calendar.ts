@@ -29,6 +29,7 @@ export const listMultiBusyTimes = async (
         requestBody: {
             timeMin: timeMin.toISOString(),
             timeMax: timeMax.toISOString(),
+            timeZone: 'Asia/Tokyo',  // ← これを追加
             items: calendarIds.map(id => ({ id })),
         },
     });
