@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getCases } from "@/lib/db";
-import { listMultiBusyTimes } from "@/lib/google-calendar";
+import { listMultiBusyTimes, listEventsInRange } from "@/lib/google-calendar";
 import { findFreeSlots } from "@/lib/slot-finder";
 import { addDays } from "date-fns";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
@@ -34,9 +34,30 @@ export async function GET(req: NextRequest) {
         const calendarIds = ['primary', ...(caseData.members || [])];
         const busyEvents = await listMultiBusyTimes(session.accessToken, timeMin, timeMax, calendarIds);
 
+        // 往訪バッファ：タイトルに「往訪」が含まれる予定の前後に60分を追加して busy に混ぜる
+        if (caseData.buffer > 0) {
+            const myEvents = await listEventsInRange(session.accessToken, timeMin, timeMax);
+            myEvents.forEach(ev => {
+                if (ev.summary?.includes('往訪') && ev.start?.dateTime && ev.end?.dateTime) {
+                    const evStart = new Date(ev.start.dateTime);
+                    const evEnd = new Date(ev.end.dateTime);
+                    // 予定の前に60分バッファ
+                    busyEvents.push({
+                        start: new Date(evStart.getTime() - caseData.buffer * 60 * 1000),
+                        end: evStart,
+                    });
+                    // 予定の後に60分バッファ
+                    busyEvents.push({
+                        start: evEnd,
+                        end: new Date(evEnd.getTime() + caseData.buffer * 60 * 1000),
+                    });
+                }
+            });
+        }
+
         const slots = findFreeSlots(busyEvents, {
             durationMinutes: caseData.duration,
-            bufferMinutes: caseData.buffer,
+            bufferMinutes: 0, // バッファは上で予定として混ぜ済みなので常に0
             workingHourStart: 10,
             workingHourEnd: 19,
             lunchStart: 12,

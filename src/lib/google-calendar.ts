@@ -103,6 +103,20 @@ export const createConfirmedEvent = async (
     return response.data;
 };
 
+// 自分のカレンダー（primary）から指定期間の予定一覧を取る（タイトル付き）
+export const listEventsInRange = async (accessToken: string, timeMin: Date, timeMax: Date) => {
+    const calendar = getGoogleCalendarClient(accessToken);
+    const response = await calendar.events.list({
+        calendarId: 'primary',
+        timeMin: timeMin.toISOString(),
+        timeMax: timeMax.toISOString(),
+        timeZone: 'Asia/Tokyo',
+        singleEvents: true,
+        orderBy: 'startTime',
+    });
+    return response.data.items || [];
+};
+
 export const deleteEvent = async (accessToken: string, eventId: string) => {
     const calendar = getGoogleCalendarClient(accessToken);
     await calendar.events.delete({
