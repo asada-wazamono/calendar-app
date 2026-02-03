@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
     const caseId = searchParams.get('caseId');
     if (!caseId) return NextResponse.json({ error: "caseId is required" }, { status: 400 });
 
-    const caseData = getCases()[caseId];
+    const cases = await getCases();  // ← await 追加 & 変数に分離
+    const caseData = cases[caseId];
     if (!caseData || caseData.userId !== session.user?.email) {
         return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
