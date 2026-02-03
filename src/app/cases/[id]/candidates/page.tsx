@@ -16,26 +16,38 @@ export default function Candidates() {
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
+    const [debugInfo, setDebugInfo] = useState<string | null>(null);
     const router = useRouter();
 
     useEffect(() => {
         Promise.all([
             fetch(`/api/slots?caseId=${id}&days=${days}`).then(res => res.json()),
             fetch(`/api/cases?id=${id}`).then(res => res.json()),
-        ]).then(([slotsData, caseData]) => {
+        ]).then(async ([slotsData, caseData]) => {
             if (Array.isArray(slotsData)) {
                 setSlots(slotsData);
             } else {
-                console.error('API returned non-array data:', slotsData);
                 setSlots([]);
             }
             if (caseData?.members) {
                 setMembers(caseData.members);
             }
+
+            // 候補が0件なら debug-slots も呼んで結果を画面上に出す
+            if (!Array.isArray(slotsData) || slotsData.length === 0) {
+                try {
+                    const debugRes = await fetch(`/api/debug-slots?caseId=${id}&days=${days}`);
+                    const debugData = await debugRes.json();
+                    setDebugInfo(JSON.stringify(debugData, null, 2));
+                } catch {
+                    setDebugInfo('debug-slots fetch failed');
+                }
+            }
+
             setLoading(false);
         }).catch(err => {
-            console.error('Failed to fetch data:', err);
             setSlots([]);
+            setDebugInfo(`fetch error: ${err}`);
             setLoading(false);
         });
     }, [id, days]);
@@ -112,7 +124,17 @@ export default function Candidates() {
                 })}
             </div>
 
-            {slots.length === 0 && <p>候補が見つかりませんでした。条件を変えてやり直してください。</p>}
+            {slots.length === 0 && (
+                <div>
+                    <p>候補が見つかりませんでした。条件を変えてやり直してください。</p>
+                    {debugInfo && (
+                        <details style={{ marginTop: '1rem' }}>
+                            <summary style={{ cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.85rem' }}>デバッグ情報</summary>
+                            <pre style={{ color: 'var(--text-muted)', fontSize: '0.75rem', whiteSpace: 'pre-wrap', marginTop: '0.5rem', maxHeight: '400px', overflow: 'auto' }}>{debugInfo}</pre>
+                        </details>
+                    )}
+                </div>
+            )}
 
             {/* Google Calendar Embed */}
             <div style={{ marginTop: '3rem', marginBottom: '2rem' }}>
