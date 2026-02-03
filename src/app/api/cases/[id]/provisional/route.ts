@@ -28,7 +28,8 @@ export async function POST(
                 session.accessToken,
                 new Date(slot.start),
                 new Date(slot.end),
-                id
+                id,
+                caseData.members || []
             );
             if (event.id) eventIds.push(event.id);
         }

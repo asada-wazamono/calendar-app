@@ -56,7 +56,8 @@ export const createProvisionalEvent = async (
     accessToken: string,
     start: Date,
     end: Date,
-    caseId: string
+    caseId: string,
+    members: string[] = []
 ) => {
     const calendar = getGoogleCalendarClient(accessToken);
     const response = await calendar.events.insert({
@@ -67,6 +68,7 @@ export const createProvisionalEvent = async (
             start: { dateTime: start.toISOString(), timeZone: 'Asia/Tokyo' },
             end: { dateTime: end.toISOString(), timeZone: 'Asia/Tokyo' },
             colorId: '5', // Yellow/Banana color for visibility
+            attendees: members.map(email => ({ email, optional: true })),
         },
     });
     return response.data;
@@ -76,7 +78,8 @@ export const createConfirmedEvent = async (
     accessToken: string,
     start: Date,
     end: Date,
-    summary: string
+    summary: string,
+    members: string[] = []
 ) => {
     const calendar = getGoogleCalendarClient(accessToken);
     const response = await calendar.events.insert({
@@ -92,6 +95,7 @@ export const createConfirmedEvent = async (
                     conferenceSolutionKey: { type: 'hangoutsMeet' },
                 },
             },
+            attendees: members.map(email => ({ email })),
         },
     });
     return response.data;

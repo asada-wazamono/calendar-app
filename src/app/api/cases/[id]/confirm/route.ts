@@ -37,7 +37,8 @@ export async function POST(
             session.accessToken,
             new Date(start),
             new Date(end),
-            caseData.name
+            caseData.name,
+            caseData.members || []
         );
 
         caseData.status = 'confirmed';

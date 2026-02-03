@@ -150,13 +150,15 @@ export default function Candidates() {
                 }}>
                     <iframe
                         src={(() => {
+                            // 各人に別々の色を割り当てる
+                            const COLORS = ['%234285F4', '%23039BE5', '%23D50000', '%23F4511E', '%238E24AA', '%230B8043', '%23EF5350', '%23AB47BC'];
                             const allEmails = [
                                 ...(session?.user?.email ? [session.user.email] : []),
                                 ...members,
                             ];
-                            // Google Calendar embed は &src= を複数並べる形で複数カレンダー対応
+                            // Google Calendar embed: &src=メール&color=色 を各人分並べる
                             const srcParams = allEmails
-                                .map(email => `src=${encodeURIComponent(email)}`)
+                                .map((email, i) => `src=${encodeURIComponent(email)}&color=${COLORS[i % COLORS.length]}`)
                                 .join('&');
                             return `https://calendar.google.com/calendar/embed?${srcParams}&ctz=Asia/Tokyo&mode=WEEK&showTitle=0&showNav=1&showPrint=0&showCalendars=1`;
                         })()}
