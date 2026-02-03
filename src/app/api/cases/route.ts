@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    const allCases = getCases();
+    const allCases = await getCases();  // ← await 追加
 
     if (id) {
         const c = allCases[id];
@@ -41,6 +41,6 @@ export async function POST(req: NextRequest) {
         createdAt: new Date().toISOString(),
     };
 
-    saveCase(newCase);
+    await saveCase(newCase);  // ← await 追加
     return NextResponse.json(newCase);
 }

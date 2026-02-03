@@ -1,15 +1,9 @@
-import fs from 'fs';
-import path from 'path';
+import { Redis } from '@upstash/redis';
 
-const DB_PATH = path.join(process.cwd(), '.data', 'cases.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(path.join(process.cwd(), '.data'))) {
-    fs.mkdirSync(path.join(process.cwd(), '.data'));
-}
-if (!fs.existsSync(DB_PATH)) {
-    fs.writeFileSync(DB_PATH, JSON.stringify({}));
-}
+const redis = new Redis({
+    url: process.env.KV_REST_API_URL!,
+    token: process.env.KV_REST_API_TOKEN!,
+});
 
 export interface Case {
     id: string;
@@ -25,19 +19,19 @@ export interface Case {
     createdAt: string;
 }
 
-export const getCases = (): Record<string, Case> => {
-    const data = fs.readFileSync(DB_PATH, 'utf-8');
-    return JSON.parse(data);
+export const getCases = async (): Promise<Record<string, Case>> => {
+    const cases = await redis.get<Record<string, Case>>('cases');
+    return cases || {};
 };
 
-export const saveCase = (caseData: Case) => {
-    const cases = getCases();
+export const saveCase = async (caseData: Case) => {
+    const cases = await getCases();
     cases[caseData.id] = caseData;
-    fs.writeFileSync(DB_PATH, JSON.stringify(cases, null, 2));
+    await redis.set('cases', cases);
 };
 
-export const deleteCase = (id: string) => {
-    const cases = getCases();
+export const deleteCase = async (id: string) => {
+    const cases = await getCases();
     delete cases[id];
-    fs.writeFileSync(DB_PATH, JSON.stringify(cases, null, 2));
+    await redis.set('cases', cases);
 };

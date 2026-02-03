@@ -14,7 +14,7 @@ export async function DELETE(
     if (!session?.accessToken) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
-    const cases = getCases();
+    const cases = await getCases();  // ← await 追加
     const caseData = cases[id];
 
     if (!caseData || caseData.userId !== session.user?.email) {
@@ -34,7 +34,7 @@ export async function DELETE(
             }
         }
 
-        deleteCase(id);
+        await deleteCase(id);  // ← await 追加
         console.log(`Case deleted successfully: ${id}`);
         return NextResponse.json({ success: true, message: "Case and associated events deleted" });
     } catch (error: unknown) {

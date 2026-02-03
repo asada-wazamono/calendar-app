@@ -2,13 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { listProvisionalEvents, deleteEvent } from "@/lib/google-calendar";
-import { getCases } from "@/lib/db";
-import fs from 'fs';
-import path from 'path';
+import { getCases, saveCase, deleteCase } from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
-
-const DB_PATH = path.join(process.cwd(), '.data', 'cases.json');
 
 export async function DELETE(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -39,25 +35,19 @@ export async function DELETE(req: NextRequest) {
             }
         }
 
-        // Cleanup local DB
-        const allCases = getCases();
-        let updated = false;
+        // Cleanup DB
+        const allCases = await getCases();
         for (const id of Object.keys(allCases)) {
             const c = allCases[id];
             if (c.userId === session.user?.email && c.status === 'provisional') {
                 const remaining = (c.provisionalEventIds || []).filter(eid => !filtered.some(e => e.id === eid));
                 if (remaining.length === 0) {
-                    delete allCases[id]; // Disappear from list
-                    updated = true;
+                    await deleteCase(id);
                 } else if (remaining.length !== (c.provisionalEventIds || []).length) {
                     c.provisionalEventIds = remaining;
-                    updated = true;
+                    await saveCase(c);
                 }
             }
-        }
-
-        if (updated) {
-            fs.writeFileSync(DB_PATH, JSON.stringify(allCases, null, 2));
         }
 
         return NextResponse.json({ success: true, count: filtered.length });

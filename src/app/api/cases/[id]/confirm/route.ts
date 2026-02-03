@@ -15,7 +15,8 @@ export async function POST(
     const body = await req.json();
     const { start, end } = body;
 
-    const caseData = getCases()[id];
+    const cases = await getCases();  // ← await 追加 & 変数に分離
+    const caseData = cases[id];
     if (!caseData || caseData.userId !== session.user?.email) {
         return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
@@ -42,7 +43,7 @@ export async function POST(
         caseData.status = 'confirmed';
         caseData.confirmedEventId = confirmedEvent.id!;
         caseData.provisionalEventIds = []; // Clear them out
-        saveCase(caseData);
+        await saveCase(caseData);  // ← await 追加
 
         return NextResponse.json({ success: true, confirmedEvent });
     } catch (error) {
