@@ -12,29 +12,32 @@ export default function Candidates() {
     const searchParams = useSearchParams();
     const days = searchParams.get('days') || '5';
     const [slots, setSlots] = useState<{ start: string; end: string }[]>([]);
+    const [members, setMembers] = useState<string[]>([]);
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        fetch(`/api/slots?caseId=${id}&days=${days}`)
-            .then(res => res.json())
-            .then(data => {
-                // Ensure data is an array
-                if (Array.isArray(data)) {
-                    setSlots(data);
-                } else {
-                    console.error('API returned non-array data:', data);
-                    setSlots([]);
-                }
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Failed to fetch slots:', err);
+        Promise.all([
+            fetch(`/api/slots?caseId=${id}&days=${days}`).then(res => res.json()),
+            fetch(`/api/cases?id=${id}`).then(res => res.json()),
+        ]).then(([slotsData, caseData]) => {
+            if (Array.isArray(slotsData)) {
+                setSlots(slotsData);
+            } else {
+                console.error('API returned non-array data:', slotsData);
                 setSlots([]);
-                setLoading(false);
-            });
+            }
+            if (caseData?.members) {
+                setMembers(caseData.members);
+            }
+            setLoading(false);
+        }).catch(err => {
+            console.error('Failed to fetch data:', err);
+            setSlots([]);
+            setLoading(false);
+        });
     }, [id, days]);
 
     const handleToggle = (index: number) => {
@@ -115,7 +118,7 @@ export default function Candidates() {
             <div style={{ marginTop: '3rem', marginBottom: '2rem' }}>
                 <h2 style={{ marginBottom: '1rem' }}>カレンダー確認</h2>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
-                    念のため、実際のカレンダーで予定を確認できます。
+                    念のため、実際のカレンダーで予定を確認できます。自分＋同席メンバーの予定が表示されます。
                 </p>
                 <div style={{
                     border: '1px solid var(--glass-border)',
@@ -124,7 +127,17 @@ export default function Candidates() {
                     height: '600px'
                 }}>
                     <iframe
-                        src={`https://calendar.google.com/calendar/embed?src=${session?.user?.email ? encodeURIComponent(session.user.email) : ''}&ctz=Asia/Tokyo&mode=WEEK&showTitle=0&showNav=1&showPrint=0&showCalendars=0`}
+                        src={(() => {
+                            const allEmails = [
+                                ...(session?.user?.email ? [session.user.email] : []),
+                                ...members,
+                            ];
+                            // Google Calendar embed は &src= を複数並べる形で複数カレンダー対応
+                            const srcParams = allEmails
+                                .map(email => `src=${encodeURIComponent(email)}`)
+                                .join('&');
+                            return `https://calendar.google.com/calendar/embed?${srcParams}&ctz=Asia/Tokyo&mode=WEEK&showTitle=0&showNav=1&showPrint=0&showCalendars=1`;
+                        })()}
                         style={{
                             border: 0,
                             width: '100%',
