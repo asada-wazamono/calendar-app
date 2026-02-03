@@ -67,42 +67,34 @@ export const findFreeSlots = (
                 )
             ].sort((a, b) => a.start.getTime() - b.start.getTime());
 
-            // Find continuous free blocks
+            // 空き枠を見つけて、その中から durationMinutes 刻みで候補を生成する
+            const addCandidatesFromBlock = (blockStart: Date, blockEnd: Date) => {
+                // バッファは移動時間なので、空き枠の先頭だけに適用（前の予定の後に移動する）
+                const effectiveStart = addMinutes(blockStart, options.bufferMinutes);
+
+                // effectiveStart から durationMinutes ごとに候補を並べる
+                let slotStart = effectiveStart;
+                while (differenceInMinutes(blockEnd, slotStart) >= options.durationMinutes) {
+                    candidates.push({
+                        start: slotStart,
+                        end: addMinutes(slotStart, options.durationMinutes),
+                    });
+                    slotStart = addMinutes(slotStart, options.durationMinutes);
+                }
+            };
+
             let freeBlockStart = dayStart;
 
             for (const exclusion of exclusions) {
-                // If there's a gap before this exclusion
                 if (isBefore(freeBlockStart, exclusion.start)) {
-                    const blockEnd = exclusion.start;
-
-                    // Apply buffer constraints
-                    const bufferedStart = addMinutes(freeBlockStart, options.bufferMinutes);
-                    const bufferedEnd = addMinutes(blockEnd, -options.bufferMinutes);
-
-                    // Check if this block is long enough for the meeting
-                    if (differenceInMinutes(bufferedEnd, bufferedStart) >= options.durationMinutes) {
-                        candidates.push({
-                            start: bufferedStart,
-                            end: bufferedEnd
-                        });
-                    }
+                    addCandidatesFromBlock(freeBlockStart, exclusion.start);
                 }
-
-                // Move the pointer to after this exclusion
                 freeBlockStart = max([freeBlockStart, exclusion.end]);
             }
 
-            // Check if there's free time after the last exclusion until end of day
+            // 最後の除外時間の後〜営業時間終了まで
             if (isBefore(freeBlockStart, dayEnd)) {
-                const bufferedStart = addMinutes(freeBlockStart, options.bufferMinutes);
-                const bufferedEnd = addMinutes(dayEnd, -options.bufferMinutes);
-
-                if (differenceInMinutes(bufferedEnd, bufferedStart) >= options.durationMinutes) {
-                    candidates.push({
-                        start: bufferedStart,
-                        end: bufferedEnd
-                    });
-                }
+                addCandidatesFromBlock(freeBlockStart, dayEnd);
             }
 
             daysFound++;

@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
     try {
         const calendarIds = ['primary', ...(caseData.members || [])];
         const busyEvents = await listMultiBusyTimes(session.accessToken, timeMin, timeMax, calendarIds);
+
         const slots = findFreeSlots(busyEvents, {
             durationMinutes: caseData.duration,
             bufferMinutes: caseData.buffer,
@@ -44,7 +45,19 @@ export async function GET(req: NextRequest) {
             daysToSearch: daysToSearch,
         });
 
-        return NextResponse.json(slots);
+        // maxSlots で表示する候補数を制限する（日程が偏らないよう、1日あたり最大2枠まで）
+        const limited: typeof slots = [];
+        const perDayCount: Record<string, number> = {};
+        for (const slot of slots) {
+            if (limited.length >= caseData.maxSlots) break;
+            const dayKey = slot.start.toISOString().slice(0, 10);
+            perDayCount[dayKey] = (perDayCount[dayKey] || 0) + 1;
+            if (perDayCount[dayKey] <= 2) {
+                limited.push(slot);
+            }
+        }
+
+        return NextResponse.json(limited);
     } catch (error) {
         console.error("API Error:", error);
         return NextResponse.json({ error: "Failed to fetch slots" }, { status: 500 });
