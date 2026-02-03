@@ -6,7 +6,8 @@ import { authOptions } from "@/lib/auth";
 import { getCases } from "@/lib/db";
 import { listMultiBusyTimes } from "@/lib/google-calendar";
 import { findFreeSlots } from "@/lib/slot-finder";
-import { addDays, startOfDay } from "date-fns";
+import { addDays } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
 export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -23,7 +24,10 @@ export async function GET(req: NextRequest) {
     }
 
     const daysToSearch = parseInt(searchParams.get('days') || '5');
-    const timeMin = startOfDay(new Date());
+    const now = new Date();
+    const zonedNow = toZonedTime(now, 'Asia/Tokyo');
+    zonedNow.setHours(0, 0, 0, 0);
+    const timeMin = fromZonedTime(zonedNow, 'Asia/Tokyo');
     const timeMax = addDays(timeMin, daysToSearch + 5); // Search a bit more to ensure we find enough week days
 
     try {

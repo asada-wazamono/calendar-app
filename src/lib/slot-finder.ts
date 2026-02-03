@@ -3,14 +3,28 @@ import {
     isBefore,
     isAfter,
     isWithinInterval,
-    startOfDay,
-    setHours,
-    setMinutes,
     addDays,
     isWeekend,
     differenceInMinutes,
     max
 } from 'date-fns';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+
+const TIMEZONE = 'Asia/Tokyo';
+
+// 東京時間で指定した時刻の Date を返す
+const setTimeInTokyo = (date: Date, hours: number, minutes: number): Date => {
+    const zoned = toZonedTime(date, TIMEZONE);
+    zoned.setHours(hours, minutes, 0, 0);
+    return fromZonedTime(zoned, TIMEZONE);
+};
+
+// 東京時間での日の開始（00:00 東京時間）を返す
+const startOfDayInTokyo = (date: Date): Date => {
+    const zoned = toZonedTime(date, TIMEZONE);
+    zoned.setHours(0, 0, 0, 0);
+    return fromZonedTime(zoned, TIMEZONE);
+};
 
 export interface Slot {
     start: Date;
@@ -33,15 +47,15 @@ export const findFreeSlots = (
     options: FinderOptions
 ): Slot[] => {
     const candidates: Slot[] = [];
-    let currentDay = startOfDay(addDays(options.startDate, 1)); // Start from tomorrow
+    let currentDay = startOfDayInTokyo(addDays(options.startDate, 1)); // Start from tomorrow
     let daysFound = 0;
 
     while (daysFound < options.daysToSearch) {
-        if (!isWeekend(currentDay)) {
-            const dayStart = setMinutes(setHours(currentDay, options.workingHourStart), 0);
-            const dayEnd = setMinutes(setHours(currentDay, options.workingHourEnd), 0);
-            const lunchStart = setMinutes(setHours(currentDay, options.lunchStart), 0);
-            const lunchEnd = setMinutes(setHours(currentDay, options.lunchEnd), 0);
+        if (!isWeekend(toZonedTime(currentDay, TIMEZONE))) {
+            const dayStart = setTimeInTokyo(currentDay, options.workingHourStart, 0);
+            const dayEnd = setTimeInTokyo(currentDay, options.workingHourEnd, 0);
+            const lunchStart = setTimeInTokyo(currentDay, options.lunchStart, 0);
+            const lunchEnd = setTimeInTokyo(currentDay, options.lunchEnd, 0);
 
             // Create "exclusion periods" for this day (busy events + lunch)
             const exclusions = [
