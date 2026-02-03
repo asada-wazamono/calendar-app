@@ -20,6 +20,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
 }
 
+// middleware.ts
+
+/* 一時的にコメントアウトして動作確認
 export const config = {
     matcher: ['/'],
 };
+*/
