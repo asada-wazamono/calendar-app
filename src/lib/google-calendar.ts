@@ -62,6 +62,7 @@ export const createProvisionalEvent = async (
     const calendar = getGoogleCalendarClient(accessToken);
     const response = await calendar.events.insert({
         calendarId: 'primary',
+        sendUpdates: 'none', // 仮押さえは招待メールを送らない
         requestBody: {
             summary: `【仮】打合せ候補`,
             description: `AG_CASE_ID=${caseId}\n(Antigravity Generated)`,
@@ -85,6 +86,7 @@ export const createConfirmedEvent = async (
     const response = await calendar.events.insert({
         calendarId: 'primary',
         conferenceDataVersion: 1,
+        sendUpdates: 'none', // 招待メールは送らない
         requestBody: {
             summary: summary,
             start: { dateTime: start.toISOString(), timeZone: 'Asia/Tokyo' },
